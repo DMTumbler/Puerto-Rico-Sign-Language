@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PRSL</string>
+    <string name="busca_tu_gif">Busca tu GIF</string>
+    <string name="busqueda">Busqueda</string>
+    <string name="gif_mostrado">GIF Mostrado</string>
+    <string name="voice_search">busqueda de voz</string>
+</resources>

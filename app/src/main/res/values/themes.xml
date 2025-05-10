@@ -1,0 +1,9 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.PuertoRicoSignLanguage" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+         <item name="colorPrimary">@color/colorPrimary</item>
+    </style>
+
+    <style name="Theme.PuertoRicoSignLanguage" parent="Base.Theme.PuertoRicoSignLanguage" />
+</resources>
