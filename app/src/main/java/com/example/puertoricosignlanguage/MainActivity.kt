@@ -17,6 +17,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -146,17 +147,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Update the search term display (keeping original input for display)
-        searchTermTextView.text = searchTerm.replaceFirstChar { it.titlecase() }
+        searchTermTextView.text = capitalize(searchTerm)
 
         // Normalize the search term to match gif filename format
-        val normalizedTerm = searchTerm
-            .lowercase() // convert to lowercase
-            .replace(" ", "_") // replace spaces with underscores
-            .normalize() // remove diacritical marks (tildes)
-            .replace(Regex("[^a-z0-9_]"), "") // remove any other special characters
+        val normalizedTerm = normalizeString(searchTerm).trim()
 
         // Try to find the drawable resource by normalized name
-        val resourceId = resources.getIdentifier(normalizedTerm, "drawable", packageName)
+        val resourceId = getGifResourceId(normalizedTerm)
 
         if (resourceId != 0) {
             // If resource is found, display it using Glide to handle GIF animation
@@ -176,9 +173,38 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun String.normalize(): String {
-        return java.text.Normalizer
-            .normalize(this, java.text.Normalizer.Form.NFD)
-            .replace(Regex("\\p{InCombiningDiacriticalMarks}+"), "")
+    private fun getGifResourceId(keyword: String): Int {
+        // Directly search for the drawable with the normalized name
+        val resId = resources.getIdentifier(keyword, "drawable", packageName)
+        return resId
+    }
+
+    private fun normalizeString(str: String?): String {
+        var word = str ?: return ""
+
+        // Replace special characters with their standard versions
+        word = word
+            .replace("á", "a")
+            .replace("é", "e")
+            .replace("í", "i")
+            .replace("ó", "o")
+            .replace("ú", "u")
+            .replace("ñ", "n")
+            .replace("ü", "u")
+            .replace(" ", "_") // replace spaces with underscores
+            .replace("[^a-z0-9_]".toRegex(), "") // Remove any other special characters
+
+        return word.lowercase()
+    }
+
+    private fun capitalize(str: String?): String? {
+        if (str == null || str.isEmpty()) return str
+        val words = str.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+        val capitalized = StringBuilder()
+        for (word in words) {
+            capitalized.append(word.substring(0, 1).uppercase(Locale.getDefault()))
+                .append(word.substring(1)).append(" ")
+        }
+        return capitalized.toString().trim()
     }
 }
