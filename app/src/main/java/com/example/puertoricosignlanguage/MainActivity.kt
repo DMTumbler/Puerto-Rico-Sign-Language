@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Christian
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -173,12 +174,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Juan Colon y Victor
     private fun getGifResourceId(keyword: String): Int {
         // Directly search for the drawable with the normalized name
         val resId = resources.getIdentifier(keyword, "drawable", packageName)
         return resId
     }
 
+    // Juan Colon y Victor
     private fun normalizeString(str: String?): String {
         var word = str ?: return ""
 
@@ -197,6 +200,7 @@ class MainActivity : AppCompatActivity() {
         return word.lowercase()
     }
 
+    // Juan Colon y Victor
     private fun capitalize(str: String?): String? {
         if (str == null || str.isEmpty()) return str
         val words = str.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
