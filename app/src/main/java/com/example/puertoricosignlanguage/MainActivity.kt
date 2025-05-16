@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
@@ -27,6 +28,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var searchTermTextView: TextView
     private lateinit var voiceButton: FloatingActionButton
 
+    private fun EditText.hideKeyboard() {
+        val imm = context.getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.hideSoftInputFromWindow(windowToken, 0)
+    }
     // Angel y Juan Jimenez
     private val speechRecognitionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -71,6 +76,7 @@ class MainActivity : AppCompatActivity() {
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 performSearch()
+                searchEditText.hideKeyboard()
                 return@setOnEditorActionListener true
             }
             false
@@ -79,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         // Set up search functionality through button click
         searchButton.setOnClickListener {
             performSearch()
+            searchEditText.hideKeyboard()
         }
 
         // Set up voice search
@@ -123,7 +130,7 @@ class MainActivity : AppCompatActivity() {
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             )
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, "es-ES")
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Habla para buscar un GIF")
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Habla para buscar una seña")
         }
 
         try {
@@ -148,8 +155,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Update the search term display (keeping original input for display)
-        searchTermTextView.text = capitalize(searchTerm)
-
+        searchTermTextView.apply {
+            text = capitalize(searchTerm)
+            visibility = View.VISIBLE
+        }
         // Normalize the search term to match gif filename format
         val normalizedTerm = normalizeString(searchTerm).trim()
 
@@ -162,11 +171,13 @@ class MainActivity : AppCompatActivity() {
                 .asGif()
                 .load(resourceId)
                 .into(gifImageView)
+
+            searchEditText.text.clear()
         } else {
             // If resource is not found, show an error message
             Toast.makeText(
                 this,
-                "No se encontró ningún GIF con el nombre: $searchTerm",
+                "No se encontró una seña con la palabra: $searchTerm",
                 Toast.LENGTH_SHORT
             ).show()
             // Clear the current image
@@ -185,21 +196,21 @@ class MainActivity : AppCompatActivity() {
     private fun normalizeString(str: String?): String {
         var word = str ?: return ""
 
-        // Replace special characters with their standard versions
+        // Replace special characters with their standard versions (both upper and lower case)
         word = word
-            .replace("á", "a")
-            .replace("é", "e")
-            .replace("í", "i")
-            .replace("ó", "o")
-            .replace("ú", "u")
-            .replace("ñ", "n")
-            .replace("ü", "u")
+            .replace("á", "a").replace("Á", "a")
+            .replace("é", "e").replace("É", "e")
+            .replace("í", "i").replace("Í", "i")
+            .replace("ó", "o").replace("Ó", "o")
+            .replace("ú", "u").replace("Ú", "u")
+            .replace("ñ", "n").replace("Ñ", "n")
+            .replace("ü", "u").replace("Ü", "u")
             .replace(" ", "_") // replace spaces with underscores
-            .replace("[^a-z0-9_]".toRegex(), "") // Remove any other special characters
+            .replace("[^a-zA-Z0-9_]".toRegex(), "") // Remove any other special characters
+            .lowercase() // convert to lowercase after handling special characters
 
-        return word.lowercase()
+        return word
     }
-
     // Juan Colon y Victor
     private fun capitalize(str: String?): String? {
         if (str == null || str.isEmpty()) return str
