@@ -174,6 +174,7 @@ class MainActivity : AppCompatActivity() {
 
             searchEditText.text.clear()
         } else {
+            searchTermTextView.visibility = View.GONE
             // If resource is not found, show an error message
             Toast.makeText(
                 this,
