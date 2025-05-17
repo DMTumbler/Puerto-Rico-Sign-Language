@@ -21,7 +21,7 @@
         android:id="@+id/bannerContainer"
         android:layout_width="match_parent"
         android:layout_height="90dp"
-        android:background="?attr/colorPrimary"
+        android:background="@color/colorPrimary"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
@@ -48,6 +48,7 @@
         android:inputType="text"
         android:maxLines="1"
         android:padding="12dp"
+        android:textColorHint="@color/colorSecondary"
         app:layout_constraintEnd_toStartOf="@+id/searchButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/bannerContainer" />
@@ -64,7 +65,9 @@
         android:insetBottom="0dp"
         android:padding="12dp"
         app:cornerRadius="12dp"
+        app:backgroundTint="@color/colorPrimary"
         app:icon="@drawable/ic_search"
+        app:iconTint="@color/white"
         app:iconGravity="textStart"
         app:iconPadding="0dp"
         app:layout_constraintBottom_toBottomOf="@+id/searchEditText"
@@ -106,6 +109,8 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/voice_search"
         android:src="@drawable/ic_mic"
+        app:tint="@color/white"
+        app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
