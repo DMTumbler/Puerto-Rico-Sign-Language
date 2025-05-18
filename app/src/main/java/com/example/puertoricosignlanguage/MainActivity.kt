@@ -3,12 +3,16 @@ package com.example.puertoricosignlanguage
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
+
 import android.os.Bundle
 import android.speech.RecognizerIntent
+import android.util.TypedValue
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -18,20 +22,23 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var searchEditText: EditText
+    private lateinit var searchEditText: AutoCompleteTextView
     private lateinit var searchButton: Button
     private lateinit var gifImageView: ImageView
     private lateinit var searchTermTextView: TextView
     private lateinit var voiceButton: FloatingActionButton
+    private val availableGifs = mutableMapOf<String, Int>()
 
-    private fun EditText.hideKeyboard() {
+    private fun AutoCompleteTextView.hideKeyboard() {
         val imm = context.getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
         imm.hideSoftInputFromWindow(windowToken, 0)
     }
+
     // Angel y Juan Jimenez
     private val speechRecognitionLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -72,6 +79,12 @@ class MainActivity : AppCompatActivity() {
         searchTermTextView = findViewById(R.id.searchTermTextView)
         voiceButton = findViewById(R.id.voiceButton)
 
+        // Load all available GIFs from drawable folder
+        loadAvailableGifs()
+
+        // Setup autocomplete with available GIF names
+        setupAutocomplete()
+
         // Set up search functionality through keyboard action
         searchEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -92,6 +105,76 @@ class MainActivity : AppCompatActivity() {
         voiceButton.setOnClickListener {
             checkMicrophonePermission()
         }
+
+        // Perform search when a suggestion is clicked
+        searchEditText.setOnItemClickListener { _, _, _, _ ->
+            performSearch()
+            searchEditText.hideKeyboard()
+        }
+    }
+
+    private fun loadAvailableGifs() {
+        try {
+            val drawableFields = R.drawable::class.java.fields
+
+            for (field in drawableFields) {
+                val resourceName = field.name
+                try {
+                    val resourceId = field.getInt(null) //
+
+                    if (isLikelyGif(resources, resourceId)) {
+                        val displayName = denormalizeString(resourceName)
+                        availableGifs[displayName] = resourceId
+                    }
+                } catch (e: IllegalAccessException) {
+                    System.err.println("Error accessing resource ID for ${field.name}: ${e.message}")
+                } catch (e: Resources.NotFoundException) {
+                    System.err.println("Resource not found for ID obtained from ${field.name}: ${e.message}")
+                }
+            }
+        } catch (e: Exception) {
+            System.err.println("Failed to load available GIFs: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    private fun isLikelyGif(res: Resources, resourceId: Int): Boolean {
+        try {
+            val value = TypedValue()
+            res.getValue(resourceId, value, true) // true to resolve references
+
+            // The 'value.string' field will hold the path to the resource file,
+            // e.g., "res/drawable-mdpi/my_animation.gif"
+            val resourcePath = value.string?.toString()
+
+            return resourcePath != null && resourcePath.endsWith(".gif", ignoreCase = true)
+        } catch (e: Resources.NotFoundException) {
+            // This can happen if the ID is not a valid file-based resource
+            return false
+        } catch (e: Exception) {
+            System.err.println("Error getting resource value for ID $resourceId: ${e.message}")
+            return false
+        }
+    }
+
+    private fun setupAutocomplete() {
+        // Get all display names for autocomplete suggestions
+        val suggestions = availableGifs.keys.toList().sorted()
+
+        // Create a custom adapter for autocomplete with limited suggestions
+        val adapter = object : ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            suggestions
+        ) {
+            override fun getCount(): Int {
+                // Limit the number of suggestions shown at a time
+                return minOf(5, super.getCount())
+            }
+        }
+
+        searchEditText.setAdapter(adapter)
+        searchEditText.threshold = 1  // Show suggestions after typing 1 character
     }
 
     // Angel y Juan Jimenez
@@ -154,18 +237,34 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Update the search term display (keeping original input for display)
-        searchTermTextView.apply {
-            text = capitalize(searchTerm)
-            visibility = View.VISIBLE
+        // First try exact match with entered text
+        var resourceId = availableGifs[searchTerm]
+
+        // If not found, try with capitalized version
+        if (resourceId == null) {
+            resourceId = availableGifs[capitalize(searchTerm)]
         }
-        // Normalize the search term to match gif filename format
-        val normalizedTerm = normalizeString(searchTerm).trim()
 
-        // Try to find the drawable resource by normalized name
-        val resourceId = getGifResourceId(normalizedTerm)
+        // If still not found, try with normalized version
+        if (resourceId == null) {
+            val normalizedTerm = normalizeString(searchTerm)
+            // Get the denormalized version that might be in our map
+            val possibleMatches = availableGifs.keys.filter {
+                normalizeString(it) == normalizedTerm
+            }
 
-        if (resourceId != 0) {
+            if (possibleMatches.isNotEmpty()) {
+                resourceId = availableGifs[possibleMatches.first()]
+            }
+        }
+
+        if (resourceId != null) {
+            // Update the search term display (keeping original input for display)
+            searchTermTextView.apply {
+                text = capitalize(searchTerm)
+                visibility = View.VISIBLE
+            }
+
             // If resource is found, display it using Glide to handle GIF animation
             Glide.with(this)
                 .asGif()
@@ -187,13 +286,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Juan Colon y Victor
-    private fun getGifResourceId(keyword: String): Int {
-        // Directly search for the drawable with the normalized name
-        val resId = resources.getIdentifier(keyword, "drawable", packageName)
-        return resId
-    }
-
-    // Juan Colon y Victor
     private fun normalizeString(str: String?): String {
         var word = str ?: return ""
 
@@ -212,9 +304,21 @@ class MainActivity : AppCompatActivity() {
 
         return word
     }
+
+    // New method to convert normalized names back to display names
+    private fun denormalizeString(str: String?): String {
+        var word = str ?: return ""
+
+        // Replace underscores with spaces
+        word = word.replace("_", " ")
+
+        // Capitalize each wordus
+        return capitalize(word) ?: word
+    }
+
     // Juan Colon y Victor
     private fun capitalize(str: String?): String? {
-        if (str == null || str.isEmpty()) return str
+        if (str.isNullOrEmpty()) return str
         val words = str.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val capitalized = StringBuilder()
         for (word in words) {
