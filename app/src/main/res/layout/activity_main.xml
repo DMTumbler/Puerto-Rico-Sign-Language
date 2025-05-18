@@ -34,7 +34,7 @@
             android:src="@drawable/sagrado_blanco" />
     </FrameLayout>
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/searchEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
