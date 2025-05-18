@@ -144,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Juan Colon y Victor
+    // Hello world
     private fun performSearch() {
         val searchTerm = searchEditText.text.toString().trim()
 
@@ -194,6 +194,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Juan Colon y Victor
+
+    // Hello world
+    // Hello world
+    // Hello world
+    // Hello world
+    // Hello world
     private fun normalizeString(str: String?): String {
         var word = str ?: return ""
 

@@ -21,7 +21,7 @@
         android:id="@+id/bannerContainer"
         android:layout_width="match_parent"
         android:layout_height="90dp"
-        android:background="@color/colorPrimary"
+        android:background="@color/colorSecondary"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
@@ -65,7 +65,7 @@
         android:insetBottom="0dp"
         android:padding="12dp"
         app:cornerRadius="12dp"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorComplimentary"
         app:icon="@drawable/ic_search"
         app:iconTint="@color/white"
         app:iconGravity="textStart"
@@ -110,7 +110,7 @@
         android:contentDescription="@string/voice_search"
         android:src="@drawable/ic_mic"
         app:tint="@color/white"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/colorSecondary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
