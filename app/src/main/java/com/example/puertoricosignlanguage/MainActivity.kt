@@ -319,6 +319,13 @@ class MainActivity : AppCompatActivity() {
     // Juan Colon y Victor
     private fun capitalize(str: String?): String? {
         if (str.isNullOrEmpty()) return str
+
+        // First check if the string contains "usc" (case insensitive)
+        if (str.lowercase(Locale.getDefault()).contains("usc")) {
+            return str.uppercase(Locale.getDefault())
+        }
+
+        // If not USC, proceed with normal capitalization
         val words = str.split(" ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
         val capitalized = StringBuilder()
         for (word in words) {
@@ -326,5 +333,4 @@ class MainActivity : AppCompatActivity() {
                 .append(word.substring(1)).append(" ")
         }
         return capitalized.toString().trim()
-    }
-}
+    }}
